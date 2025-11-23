@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template, request
 
 app = Flask(__name__)
 
@@ -8,11 +8,11 @@ def main_page():
 
 @app.route("/register", methods=["POST"])
 def user_register():
-    return "Register"
+    return render_template("register.html")
 
 @app.post("/login")
 def user_login():
-    return "Login"
+    return render_template('login.html')
 
 @app.route("/logout", methods=["GET"])
 def user_logout():
