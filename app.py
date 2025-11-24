@@ -81,8 +81,8 @@ def user_lists_delete(user_id, list_id):
     return f"User {user_id} list item {list_id}"
 
 @app.route("/user/<user_id>/list/<list_id>/<film_id>", methods=["DELETE"])
-def user_list_item_delete( user_id, list_id):
-    return f"User {user_id} list item {list_id} deleted"
+def user_list_item_delete( user_id, list_id, film_id):
+    return f"User {user_id} list item {list_id}, film {film_id}deleted"
 
 
 if __name__ == '__main__':
