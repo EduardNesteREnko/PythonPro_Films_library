@@ -1,10 +1,16 @@
 from flask import Flask, render_template, request
-
+import sqlite3
 app = Flask(__name__)
 
 @app.route("/")
 def main_page():
-    return "Hello world!"
+
+    con = sqlite3.connect('database.db')
+    cur = con.cursor()
+    res = cur.execute("SELECT id, poster, name FROM film order by added_at desc limit 10")
+    result = res.fetchall()
+    con.close()
+    return str(result)
 
 @app.route("/register", methods=["POST"])
 def user_register():
@@ -28,7 +34,11 @@ def user_delete(user_id):
 
 @app.route("/films", methods=["GET"])
 def films():
-    return f"Films"
+    con = sqlite3.connect('database.db')
+    cur = con.cursor()
+    res = cur.execute("SELECT id, poster, name FROM film order by added_at desc")
+    result = res.fetchall()
+    return result
 
 @app.route("/films", methods=["POST"])
 def film_add():
@@ -36,7 +46,14 @@ def film_add():
 
 @app.route("/films/<film_id>", methods=["GET"])
 def film_info(film_id):
-    return f"Film {film_id}"
+    con = sqlite3.connect('database.db')
+    cur = con.cursor()
+    res = cur.execute(f"SELECT * FROM film where id={film_id}")
+    result = res.fetchone()
+
+    actors = cur.execute(f"SELECT * FROM actor join actor_film on actor.id == actor_film.actor_id where actor_film.film_id={film_id}").fetchall()
+    genre = cur.execute(f'SELECT * FROM genre_film where film_id={film_id} ').fetchall()
+    return f"Film {film_id} is {result}, actors {actors}, genres {genre}"
 
 @app.route("/films/<film_id>", methods=["DELETE"])
 def film_delete(film_id):
@@ -53,7 +70,12 @@ def film_rating (film_id):
 
 @app.route("/films/<film_id>/rating", methods=["GET"])
 def film_rating_info(film_id):
-    return f"Film rating {film_id}"
+    con = sqlite3.connect('database.db')
+    cur = con.cursor()
+    cur.execute(f'SELECT * FROM feedback where film_id={film_id}')
+    result = cur.fetchall()
+    con.close()
+    return f"Film rating {film_id} is {result}"
 
 
 @app.route("/films/<film_id>/rating/<feedback_id>", methods=["PUT"])
@@ -77,7 +99,7 @@ def user_lists_delete(user_id):
     return f"List {user_id} deleted"
 
 @app.route("/user/<user_id>/list/<list_id>", methods=["GET", "POST"])
-def user_lists_delete(user_id, list_id):
+def user_lists_info(user_id, list_id):
     return f"User {user_id} list item {list_id}"
 
 @app.route("/user/<user_id>/list/<list_id>/<film_id>", methods=["DELETE"])
