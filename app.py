@@ -84,11 +84,16 @@ def film_rating_update(film_id, feedback_id):
 
 @app.route("/films/<film_id>/rating/<feedback_id>", methods=["DELETE"])
 def film_rating_deletee(film_id, feedback_id):
-    return f"Film {film_id} feedbacl {feedback_id} deleted"
+    return f"Film {film_id} feedback {feedback_id} deleted"
 
 @app.route("/films/<film_id>/rating/<feedback_id>/feedback", methods=["GET"])
 def film_rating_feedback(film_id, feedback_id):
-    return f"Film {film_id} rating {feedback_id} feedback"
+    con = sqlite3.connect('database.db')
+    cur = con.cursor()
+    cur.execute(f'SELECT * FROM feedback where film_id={film_id} and feedback_id={feedback_id}')
+    result = cur.fetchall()
+    con.close()
+    return f"Film {film_id} rating {feedback_id} feedback, result is {result}"
 
 @app.route("/user/<user_id>/list", methods=["GET", "POST"])
 def user_lists(user_id):
