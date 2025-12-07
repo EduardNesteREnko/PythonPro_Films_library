@@ -1,85 +1,22 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registration</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f0f2f5;
-            margin: 0;
-        }
-        .register-container {
-            background-color: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            width: 300px;
-        }
-        h2 {
-            text-align: center;
-            color: #333;
-        }
-        input {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        button {
-            width: 100%;
-            padding: 10px;
-            background-color: #28a745;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        button:hover {
-            background-color: #218838;
-        }
-        .link {
-            text-align: center;
-            margin-top: 15px;
-            font-size: 14px;
-        }
-        a {
-            color: #007bff;
-            text-decoration: none;
-        }
-    </style>
-</head>
-<body>
+<form action="/register" method="POST">
 
-    <div class="register-container">
-        <h2>Sign Up</h2>
+    <label for="fname">First name:</label><br>
+    <input type="text" id="fname" name="fname" value="John"><br><br>
 
-        <form method="POST">
+    <label for="lname">Last name:</label><br>
+    <input type="text" id="lname" name="lname"><br>
 
-            <label for="username">Username</label>
-            <input type="text" id="username" name="username" placeholder="Choose a username" required>
+    <label for="password">password:</label><br>
+    <input type="password" id="password" name="password"><br>
 
-            <label for="email">Email</label>
-            <input type="email" id="email" name="email" placeholder="Your email" required>
+    <label for="email">email:</label><br>
+    <input type="email" id="email" name="email"><br>
 
-            <label for="password">Password</label>
-            <input type="password" id="password" name="password" placeholder="Create a password" required>
+    <label for="login">login:</label><br>
+    <input type="text" id="login" name="login"><br>
 
-            <button type="submit">Sign Up</button>
-        </form>
+    <label for="birth_date">birth_date:</label><br>
+    <input type="date" id="birth_date" name="birth_date"><br>
 
-        <div class="link">
-            Already have an account? <a href="/login">Log in</a>
-        </div>
-    </div>
-
-</body>
-</html>
+    <input type="submit" value="Submit">
+    </form>

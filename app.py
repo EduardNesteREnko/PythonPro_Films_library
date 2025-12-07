@@ -1,12 +1,13 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, session
 import sqlite3
 app = Flask(__name__)
+app.secret_key = 'random string'
 
 def film_dictionary(cursor, row):
     d = {}
     for idx, col in enumerate(cursor.description):
         d[col[0]] = row[idx]
-        return d
+    return d
 
 class db_connection:
     def __init__(self):
@@ -35,65 +36,92 @@ def main_page():
     with db_connection() as cur:
         result = cur.execute('SELECT * FROM film order by added_at desc limit 10').fetchall()
     #result = get_db_result("SELECT id, poster, name FROM film order by added_at desc limit 10")
-    return result
+    return render_template('main.html', films=result)
 
 
 @app.route('/register', methods=["GET"])
 def register_page():
-    return """
-    <form action="/register" method="POST">
-
-    <label for="fname">First name:</label><br>
-    <input type="text" id="fname" name="fname" value="John"><br><br>
-    
-    <label for="lname">Last name:</label><br>
-    <input type="text" id="lname" name="lname"><br>
-    
-    <label for="password">password:</label><br>
-    <input type="password" id="password" name="password"><br>
-    
-    <label for="email">email:</label><br>
-    <input type="email" id="email" name="email"><br>
-    
-    <label for="login">login:</label><br>
-    <input type="text" id="login" name="login"><br>
-    
-    <label for="birth_date">birth_date:</label><br>
-    <input type="date" id="birth_date" name="birth_date"><br>
-
-    <input type="submit" value="Submit">
-    </form>
-    """
+    return render_template("register.html")
 
 @app.route("/register", methods=["POST"])
 def user_register():
     with db_connection() as cur:
         first_name = request.form['fname']
         last_name = request.form['lname']
-        email = request.form['email']
         password = request.form['password']
         login = request.form['login']
+        email = request.form['email']
         birth_date = request.form['birth_date']
-        cur.execute('INSERT INTO user (first_name, last_name, email, password, login, birth_date) VALUES (?, ?, ?, ?, ?, ?)',(first_name, last_name, email, password, login, birth_date))
-    return 'Registered'
-    #return render_template('register.html')
+        cur.execute('INSERT INTO user (first_name, last_name, password, login, email, birth_date) VALUES (?, ?, ?, ?, ?, ?)',(first_name, last_name, password, login, email, birth_date))
+    return render_template('register.html')
 
 
-@app.post("/login")
+@app.route("/login", methods=["GET"])
 def user_login():
     return render_template('login.html')
 
+@app.route("/login", methods=["POST"])
+def user_login_post():
+     login = request.form['login']
+     password = request.form['password']
+     with db_connection() as cur:
+         cur.execute('SELECT * FROM user where login= ? AND password = ?',(login, password))
+         result = cur.fetchone()
+     if result:
+         session['logged_in'] = True
+         session['user_id'] = result['id']
+         return f'Login with user {result}'
+     return 'Login failed'
+
+
 @app.route("/logout", methods=["GET"])
 def user_logout():
+    session.clear()
     return "Logout"
 
-@app.route("/user/<user_id>", methods=["GET", "PATCH"])
+@app.route("/user/<user_id>", methods=["GET", "POST"])
 def user_profile(user_id):
-    return f"User {user_id}"
+    session_user_id = session.get('user_id')
 
-@app.route("/user/<user_id>", methods=["DELETE"])
+    if request.method == "POST":
+
+         if user_id == session_user_id:
+             return "You can edit your profile"
+
+         first_name = request.form['first_name']
+         last_name = request.form['last_name']
+         email = request.form['email']
+         password = request.form['password']
+         birth_date = request.form['birth_date']
+         phone = request.form['phone']
+         photo = request.form['photo']
+         additional_info = request.form['additional_info']
+         with db_connection() as cur:
+             cur.execute(f'UPDATE user SET first_name ="{first_name}", last_name="{last_name}", email="{email}", password="{password}", birth_date="{birth_date}", phone_number="{phone}", additional_info="{additional_info}" WHERE id={user_id} ')
+             result = cur.fetchone()
+             return 'User profile updated'
+             #return render_template("user_profile.html", user_id=user_id)
+    else:
+        with db_connection() as cur:
+            cur.execute(f'SELECT * FROM user WHERE id={user_id}')
+            user_by_id = cur.fetchone()
+
+            if session_user_id is None:
+                user_by_session = 'No user in session'
+            else:
+                cur.execute(f'SELECT * FROM user WHERE id={session_user_id}')
+                user_by_session = cur.fetchone()
+        return render_template('user_page.html', user = user_by_id, user_session=user_by_session)
+        #return f'You`ve logged in as {user_by_session}'
+
+
+@app.route("/user/<user_id>/delete", methods=["GET"])
 def user_delete(user_id):
-    return f"User {user_id} deleted"
+    session_user_id = session.get('user_id')
+    if user_id == session_user_id:
+        return f"User {user_id} deleted"
+    else:
+        return f"You can delete only your profile"
 
 @app.route("/films", methods=["GET"])
 def films():
