@@ -1,4 +1,6 @@
-from flask import Flask, render_template, request, session
+import functools
+
+from flask import Flask, render_template, request, session, url_for, redirect
 import sqlite3
 app = Flask(__name__)
 app.secret_key = 'random string'
@@ -31,7 +33,18 @@ def get_db_result(query):
     con.close()
     return result
 
+def decorator_check_login(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        if 'logged_in' in session:
+            return func(*args, **kwargs)
+        else:
+            return redirect(url_for('user_login'))
+    #wrapper.__name__ = func.__name__
+    return wrapper
+
 @app.route("/")
+@decorator_check_login
 def main_page():
     with db_connection() as cur:
         result = cur.execute('SELECT * FROM film order by added_at desc limit 10').fetchall()
@@ -75,11 +88,13 @@ def user_login_post():
 
 
 @app.route("/logout", methods=["GET"])
+@decorator_check_login
 def user_logout():
     session.clear()
     return "Logout"
 
 @app.route("/user/<user_id>", methods=["GET", "POST"])
+@decorator_check_login
 def user_profile(user_id):
     session_user_id = session.get('user_id')
 
@@ -116,6 +131,7 @@ def user_profile(user_id):
 
 
 @app.route("/user/<user_id>/delete", methods=["GET"])
+@decorator_check_login
 def user_delete(user_id):
     session_user_id = session.get('user_id')
     if user_id == session_user_id:
@@ -125,8 +141,21 @@ def user_delete(user_id):
 
 @app.route("/films", methods=["GET"])
 def films():
-    result = get_db_result("SELECT id, poster, name FROM film order by added_at desc")
-    return result
+    filter_params = request.args
+    filter_list_texts = []
+    for key, value in filter_params.items():
+        if value:
+            if key == 'name':
+                filter_list_texts.append(f'name like "%{value}%"')
+            else:
+                filter_list_texts.append(f'{key}="{value}"')
+    additional_filter = ""
+    if filter_params:
+        additional_filter =  " WHERE " + " AND ".join(filter_list_texts)
+    result = get_db_result(f'SELECT * FROM film {additional_filter} order by added_at desc')
+    #result = get_db_result("SELECT id, poster, name FROM film order by added_at desc")
+    countries = get_db_result('SELECT * FROM country')
+    return render_template('films.html', films=result, countries = countries)
 
 @app.route("/films", methods=["POST"])
 def film_add():
