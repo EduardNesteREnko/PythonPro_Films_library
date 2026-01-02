@@ -11,33 +11,6 @@ import models
 app = Flask(__name__)
 app.secret_key = 'random string'
 
-def film_dictionary(cursor, row):
-    d = {}
-    for idx, col in enumerate(cursor.description):
-        d[col[0]] = row[idx]
-    return d
-
-class db_connection:
-    def __init__(self):
-        self.conn = sqlite3.connect('database.db')
-        self.conn.row_factory = film_dictionary
-        self.cur = self.conn.cursor()
-
-    def __enter__(self):
-        return self.cur
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.conn.commit()
-        self.conn.close()
-
-def get_db_result(query):
-    con = sqlite3.connect('database.db')
-    con.row_factory = film_dictionary
-    cur = con.cursor()
-    res = cur.execute(query)
-    result = res.fetchall()
-    con.close()
-    return result
 
 def decorator_check_login(func):
     @functools.wraps(func)
@@ -66,18 +39,18 @@ def register_page():
 
 @app.route("/register", methods=["POST"])
 def user_register():
-    with db_connection() as cur:
-        first_name = request.form['fname']
-        last_name = request.form['lname']
-        password = request.form['password']
-        login = request.form['login']
-        email = request.form['email']
-        birth_date = parser.parse(request.form['birth_date'])
-        database.init_db()
-        new_user = models.User(first_name=first_name, last_name=last_name, email=email, password=password, login = login, birth_date=birth_date)
-        database.db_session.add(new_user)
-        database.db_session.commit()
-        #`cur.execute('INSERT INTO user (first_name, last_name, password, login, email, birth_date) VALUES (?, ?, ?, ?, ?, ?)',(first_name, last_name, password, login, email, birth_date))
+    first_name = request.form['fname']
+    last_name = request.form['lname']
+    password = request.form['password']
+    login = request.form['login']
+    email = request.form['email']
+    birth_date = parser.parse(request.form['birth_date'])
+    database.init_db()
+
+    new_user = models.User(first_name=first_name, last_name=last_name, email=email, password=password, login = login, birth_date=birth_date)
+    database.db_session.add(new_user)
+    database.db_session.commit()
+
     return render_template('register.html')
 
 
