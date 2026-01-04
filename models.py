@@ -13,6 +13,8 @@ class User(Base):
     photo = Column(String(255))
     additional_info = Column(String(255))
     birth_date = Column(Date)
+    last_login = Column(Date)
+    created_at = Column(Date)
 
     def __repr__(self):
         return f'<User {self.login!r}>'
