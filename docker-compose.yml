@@ -1,0 +1,39 @@
+services:
+  webapp:
+    build: .
+    ports:
+      - "5000:5000"
+    command: python app.py
+    environment:
+      - CELERY_BROKER_URL=amqp://guest@rabbitmq:5672
+      - DATABASE_URL=postgresql://myuser:mypassword@database:5432/mydatabase
+
+  celery_worker:
+    build: .
+    container_name: celery_worker_container
+    command: celery -A email_worker worker --loglevel=info
+    environment:
+      - CELERY_BROKER_URL=amqp://guest@rabbitmq:5672
+      - DATABASE_URL=postgresql://myuser:mypassword@database:5432/mydatabase
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq_container
+    hostname: rabbitmq
+    ports:
+      - 5672:5672
+      - 15672:15672
+
+  database:
+    image: postgres:13
+    container_name: database_container
+    ports:
+      - 5432:5432
+    hostname: database
+    environment:
+      POSTGRES_DB: mydatabase
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+
+
+
