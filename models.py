@@ -56,7 +56,7 @@ class Genre(Base):
 class GenreFilm(Base):
     __tablename__ = 'genre_film'
     id = Column(Integer, primary_key=True)
-    genre_id = Column(Integer, ForeignKey('genre.genre'),primary_key=True)
+    genre_id = Column(String(100), ForeignKey('genre.genre'),primary_key=True)
     film_id = Column(Integer, ForeignKey('film.id'),primary_key=True)
 
 class ActorFilm(Base):

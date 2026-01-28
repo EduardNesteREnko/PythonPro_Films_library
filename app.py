@@ -215,7 +215,7 @@ def film_update(film_id):
     database.init_db()
 
     new_film_query = select(models.Film).where(models.Film.id == film_id)#update(models.Film).where(models.Film.id == film_id).values(name=data.get('name'), poster=data.get('poster'), description=data.get('description'), rating=data.get('rating'), country=data.get('country'))
-    new_film = database.db_session.execute(new_film_query).scalare_one()
+    new_film = database.db_session.execute(new_film_query).scalar_one()
 
     new_film.name = data.get('name')
     new_film.poster = data.get('poster')
