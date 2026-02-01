@@ -3,7 +3,7 @@ import models
 import database
 import email_sender
 
-app = Celery('tasks', broker='amqp://guest@localhost//')
+app = Celery('tasks', broker='pyamqp://guest@localhost//')
 
 @app.on_after_configure.connect
 def setup_periodic_tasks(sender: Celery, **kwargs):

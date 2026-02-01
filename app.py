@@ -1,10 +1,7 @@
 import functools
-import select
-from dateutil import parser, relativedelta
+from dateutil import parser
 from sqlalchemy import select, update, func
 from flask import Flask, render_template, request, session, url_for, redirect, jsonify
-import sqlite3
-import os
 import database
 import models
 
@@ -65,8 +62,8 @@ def user_login_post():
 
      database.init_db()
 
-     stmt = select(models.User).where(models.User.login == login, models.User.password == password)
-     data = database.db_session.execute(stmt).fetchall()
+     #stmt = select(models.User).where(models.User.login == login, models.User.password == password)
+     #data = database.db_session.execute(stmt).fetchall()
 
      result = database.db_session.query(models.User).filter_by(login =login, password=password).first()
 
@@ -246,8 +243,8 @@ def film_rating_info(film_id):
 
     return jsonify({
         'film_id': film_id,
-        'average_rating': grade,
-        'ratings_count': grade,
+        'average_rating': grade.average if grade else 0,
+        'ratings_count': grade.ratings_count if grade else 0,
         'ratings': ratings
     })
 
